@@ -2,7 +2,9 @@
 public class HelloWorld {
 
 	public static void main(String[] args) {
-		System.out.println("Hello, World!");
+		//setting up rpg object and running
+		TextRPG rpg = new TextRPG();
+		rpg.run();
 
 	}
 
