@@ -91,6 +91,8 @@ public class TextRPG {
 							player.setHealth();
 						}
 						invalid = true;
+						System.out.println("You have been healed!");
+						player.numPotions--;
 					}
 					else {
 						System.out.println("You do not have any potions!");
@@ -118,8 +120,9 @@ public class TextRPG {
 			//attacking the player, any player defense value is applied here to reduce damage
 			if(computerAttacks == true) 
 			{
-				//alerying the user of the enemy's choice
+				//alerting the user of the enemy's choice
 				System.out.println("The enemy has chosen to attack!");
+				System.out.println("Your defence is: " + playerDefence);
 				if(playerDefence > computerPower) 
 				{
 					enemy.attack(0,  player);
