@@ -6,17 +6,29 @@ import java.lang.Thread;
 //main class, controls the game
 public class TextRPG {
 	//scanner obj for gathering input
-	Scanner scan = new Scanner(System.in);
+	Scanner scan;
 	//Player obj representing the player
 	Player player;
+	//error int to represent program failures (ie: file ran out of input)
+	int errorLevel;
 	//randomizer for randomizing damage and defense
 	Random randomizer = new Random();
 	//Constructor
-	public TextRPG() {
+	public TextRPG(Scanner scan) {
 		//Initialize player object
 		//getting player name
 		System.out.println("Player, please enter your name");
-		String name = scan.nextLine();
+		this.scan = scan;
+		String name = "";
+		if(scan.hasNextLine())
+		{
+			name = scan.nextLine();
+		}
+		else
+		{
+			
+		}
+		errorLevel = 0;
 		player = new Player(name);
 	}
 	//sets up and ends the game
@@ -25,10 +37,14 @@ public class TextRPG {
 		System.out.println("Welcome to my RPG!");
 		System.out.println("You will be faced with monsters, and you will only have the opportunity to buy items inbetween fights.");
 		//the player battles until they die, or if they ask to quit after beating an enemy
-		while(!player.isDead()) 
+		while(!player.isDead() && errorLevel == 0) 
 		{
 			//calling the main function, pits user against computer opponent
 			this.battle();
+		}
+		if(errorLevel == 1)
+		{
+			return;
 		}
 		//ending the game and calculating score
 		System.out.println("Unfortunately, you have failed.");
@@ -38,7 +54,7 @@ public class TextRPG {
 	@SuppressWarnings("static-access")
 	//Main RPG method, handles the battle between the player and computer
 	public void battle() {
-		//insance vars
+		//instance variables
 		//the enemy that the player will battle, has its level set to the player's level
 		Monster enemy = new Monster(player.getLevel());
 		//important defense variables used in the loop, need to be declared outside of loop
@@ -46,7 +62,7 @@ public class TextRPG {
 		int cpuDefence = 0;
 		//looping over the loop until someone dies
 		System.out.println("The battle has begun!");
-		while(!enemy.isDead() && !player.isDead()) 
+		while(!enemy.isDead() && !player.isDead() && errorLevel == 0) 
 		{
 			//printing information about the opponent
 			System.out.println("Your opponent is: " + enemy.toString());
@@ -54,14 +70,25 @@ public class TextRPG {
 			do 
 			{
 				//getting user input and saving it to userChoice
+				String userChoice = "";
 				System.out.println("Would you like to heal, attack, or defend? You may see your stats by typing 'stats'");
-				String userChoice = scan.nextLine();
+				if(scan.hasNext())
+				{
+					userChoice = scan.nextLine();
+				}
+				else
+				{
+					System.out.println("No input found. Ending Game.");
+					player.damage(9999);
+					errorLevel = 1;
+					return;
+				}
 				//randomizing the attack/defense values according to the player's power range
 				int power = randomizer.nextInt((player.maxDamage - player.minDamage) +1) + player.minDamage;
 				//attacking
 				if(userChoice.equalsIgnoreCase("Attack")) 
 				{
-					//alerting the user of the enemy's defence (if any)
+					//alerting the user of the enemy's defense (if any)
 					System.out.println("The enemy's defence is: " + cpuDefence);
 					//dealing damage
 					if(cpuDefence > power) 
@@ -109,9 +136,14 @@ public class TextRPG {
 				else
 				{
 					System.out.println("That was not a valid argument. Please try again.");
+					System.out.println(userChoice);
 					invalid = true;
 				}
 			} while(invalid == true);
+			if(errorLevel == 1)
+			{
+				return;
+			}
 			//resetting cpuDefence to avoid carryover from last cycle
 			cpuDefence = 0;
 			//Randomly deciding the computer's move and attack/defense value
@@ -149,9 +181,13 @@ public class TextRPG {
 			}
 			//resetting the playerDefence value from earlier
 			playerDefence = 0;
+			if(errorLevel == 1)
+			{
+				return;
+			}
 		}
 		//If the enemy died, the user wins. Even if they both die, the user still wins
-		if(enemy.isDead()) 
+		if(enemy.isDead() && errorLevel == 0) 
 		{
 			//rewarding the user, and leveling them up if they have defeated enough opponents
 			System.out.println("Congrats, you have won!");
@@ -165,14 +201,27 @@ public class TextRPG {
 			}
 		}
 		//we call the shop so the user can buy potions to heal with
-		this.shop();
+		if(errorLevel == 0)
+		{
+			this.shop();
+		}
 		//allowing the user to quit
 		System.out.println("If you would like to quit, please type 'quit'. Otherwise, press enter to continue.");
-		String quit = scan.nextLine();
+		String quit = "";
+		if(scan.hasNextLine())
+		{
+			quit = scan.nextLine();
+		}
+		else
+		{
+			System.out.println("No input found. Ending Game.");
+			quit = "quit";
+		}
 		//killing the user to break the loop if they want to quit
 		if(quit.equalsIgnoreCase("quit")) 
 		{
-			player.damage(player.health);
+			player.damage(9999);
+			return;
 		}
 		//healing the user after the battle to 25% of their health if their health is less than 25%
 		if(player.health < (int) (player.maxHealth/4.0))
@@ -187,7 +236,7 @@ public class TextRPG {
 		System.out.println("Health Potions restore 20% of your health.");
 		System.out.println("They cost 20 gold.");
 		boolean isValid = true;
-		int numPotionsBought = 0;
+		Integer numPotionsBought = 0;
 		int purchasePrice = 0;
 		//looping over until we get a valid input
 		do 
@@ -197,9 +246,29 @@ public class TextRPG {
 			try 
 			{
 				//getting the number of potions they want to buy
-				numPotionsBought = scan.nextInt();
-				scan.nextLine();
 				isValid = true;
+				numPotionsBought = 0;
+				if(scan.hasNext())
+				{
+					try
+					{
+						numPotionsBought = Integer.valueOf(scan.nextLine());
+						//System.out.println(numPotionsBought);
+					}
+					catch(NumberFormatException e)
+					{
+						System.out.println("The value is invalid. Please try again.");
+						isValid = false;
+					}
+				}
+				else
+				{
+					System.out.println("No input found. Ending Game.");
+					player.damage(9999);
+					return;
+				}
+				//numPotionsBought = scan.nextInt();
+				//scan.nextLine();
 			} catch(InputMismatchException e) 
 			{
 				//we catch the Exception here is something other than an integer was passed in
@@ -215,10 +284,10 @@ public class TextRPG {
 					System.out.println("You do not have enough gold for that purchase.");
 				}
 			}
-			
 		} while(isValid == false || player.gold < purchasePrice);
 		//updating the number of potions the user has, and deducting the gold used to purchase them
 		player.numPotions += numPotionsBought;
 		player.gold -= purchasePrice;
+		System.out.println("You now have " + player.gold + " gold.");
 	}
 }
