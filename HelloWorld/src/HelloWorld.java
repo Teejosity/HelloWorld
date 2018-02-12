@@ -17,7 +17,7 @@ public class HelloWorld {
 		} catch(FileNotFoundException e)
 		{
 			System.out.println("No file found.");
-			rpg = new TextRPG (scan);
+			rpg = new TextRPG(scan);
 		}
 		rpg.run();
 	}
