@@ -1,16 +1,20 @@
-//Player class, represents the player in the game
 public class Player {
-	//instance variables
 	String name;
 	int health;
 	int maxHealth;
 	int level;
-	int monstersDefeated ;
+	int monstersDefeated;
 	int minDamage;
 	int maxDamage;
 	int numPotions;
 	int gold;
-	//Constructor, takes in the name received earlier and defaults the values of all the instance vars
+
+	/**
+	 * Sets health, damage, gold, and the number of potions to default values
+	 * 
+	 * @param name
+	 *            The name of the player
+	 */
 	public Player(String name) {
 		this.name = name;
 		this.level = 1;
@@ -20,57 +24,97 @@ public class Player {
 		this.setHealth();
 		this.setDamage();
 	}
-	//This levels up the user, increasing their min/max damage and max health accordingly
-	//this also heals the user to their new max health
+
+	/**
+	 * This levels up the user, increasing their min/max damage and max health
+	 * accordingly, as well as healing the user
+	 */
 	public void levelUp() {
 		level += 1;
 		this.setHealth();
 		this.setDamage();
 	}
-	//this returns a boolean of whether the user is qualified to level up or not.
-	//The user must kill 3 monsters in order to level up
+
+	/**
+	 * Checks if the user can level up; the user must have killed 3 monsters to
+	 * level up
+	 * 
+	 * @return levelUp The boolean of whether the player can level up or not
+	 */
 	public boolean canLevelUp() {
-		boolean levelUp = monstersDefeated >= 3*level;
+		boolean levelUp = monstersDefeated >= 3 * level;
 		return levelUp;
 	}
-	//this heals the player for @param health
+
+	/**
+	 * This heals the player for health amount
+	 * 
+	 * @param health
+	 *            The amount of health the player regains
+	 */
 	public void heal(int health) {
 		this.health += health;
 	}
-	//this sets the min/max damage values for the player
+
+	/**
+	 * This sets the min/max damage/power based upon the level
+	 */
 	public void setDamage() {
-		minDamage = 10 + level*3;
-		maxDamage = 10 + level*6;
+		minDamage = 10 + level * 3;
+		maxDamage = 10 + level * 6;
 	}
-	//this sets the maxHealth of the player according to their level and heals them to that health
+
+	/**
+	 * This sets the max health according to the level and heals the player to full
+	 * health
+	 */
 	public void setHealth() {
-		this.maxHealth = 90 + (10*level);
+		this.maxHealth = 90 + (10 * level);
 		this.health = maxHealth;
 	}
-	//this attacks @param target for @param damage
+
+	// this attacks @param target for @param damage
+	/**
+	 * Attacks the target for damage amount
+	 * 
+	 * @param damage
+	 *            The amount of damage to deal
+	 * @param target
+	 *            The target
+	 */
 	public void attack(int damage, Monster target) {
 		target.damage(damage);
 	}
-	//this rewards the user after they defeat a monster with 10 gold and increases the monstersDefeated count by 1
+
+	/**
+	 * This rewards the user after a victorious battle
+	 */
 	public void getRewards() {
 		monstersDefeated += 1;
 		gold += 10;
 	}
-	//this method damages the player for @param damage
+
+	/**
+	 * This damages the player for damage amount
+	 * 
+	 * @param damage
+	 *            The amount of damage to deal
+	 */
 	public void damage(int damage) {
 		System.out.println("Player took " + damage + " damage!");
 		this.health -= damage;
 	}
-	//this method returns a boolean of if the player is dead or not (ie: their health is <= 0)
+
 	public boolean isDead() {
 		boolean dead = health <= 0;
 		return dead;
 	}
-	//getter method for the user's level
+
 	public int getLevel() {
 		return level;
 	}
-	//returns a string representation of the player object
+
+	@Override
 	public String toString() {
 		String str = "Player " + name + " Level " + level + "\n";
 		str += "Health: " + health + "/" + maxHealth + "\n";

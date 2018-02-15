@@ -7,7 +7,9 @@ public class Monster {
 
 	/**
 	 * sets health and damage values based on given level
-	 * @param level The level of this monster
+	 * 
+	 * @param level
+	 *            The level of this monster
 	 */
 	public Monster(int level) {
 		this.level = level;
@@ -20,7 +22,8 @@ public class Monster {
 		System.out.println("Monster took " + damage + " damage!");
 	}
 
-	/** (this is a JavaDoc comment)
+	/**
+	 * (this is a JavaDoc comment) 
 	 * this sets the max health and heals the monster to full health
 	 */
 	public void setHealth() {
@@ -43,8 +46,11 @@ public class Monster {
 
 	/**
 	 * damages target for damage amount
-	 * @param damage The amount of damage to do
-	 * @param target The target
+	 * 
+	 * @param damage
+	 *            The amount of damage to do
+	 * @param target
+	 *            The target
 	 */
 	public void attack(int damage, Player target) {
 		target.damage(damage);
