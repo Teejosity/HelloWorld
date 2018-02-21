@@ -47,79 +47,21 @@ public class TextRPG {
 	public void battle() {
 		Monster enemy = new Monster(player.getLevel());
 		int playerDefence = 0;
-		int cpuDefence = 0;
 		System.out.println("The battle has begun!");
+    
+    // Main combat loop
 		while (!enemy.isDead() && !player.isDead() && errorLevel == 0) {
 			System.out.println("Your opponent is: " + enemy.toString());
-			boolean invalid = false;
-			do {
-				String userChoice = "";
-				System.out
-						.println("Would you like to heal, attack, or defend? You may see your stats by typing 'stats'");
-				if (scan.hasNext()) {
-					userChoice = scan.nextLine();
-				} else {
-					System.out.println("No input found. Ending Game.");
-					player.damage(9999);
-					errorLevel = 1;
-					return;
-				}
-				int power = randomizer.nextInt((player.maxDamage - player.minDamage) + 1) + player.minDamage;
-				if (userChoice.equalsIgnoreCase("Attack")) {
-					System.out.println("The enemy's defence is: " + cpuDefence);
-					if (cpuDefence > power) {
-						player.attack(0, enemy);
-					} else {
-						player.attack(power - cpuDefence, enemy);
-					}
-
-					invalid = false;
-				} else if (userChoice.equalsIgnoreCase("Defend")) {
-					playerDefence = power;
-					invalid = false;
-				} else if (userChoice.equalsIgnoreCase("Heal")) {
-					if (player.numPotions > 0) {
-						// Heals 20%
-						player.heal((int) ((1.0 / 5.0) * player.health));
-						if (player.health > player.maxHealth) {
-							player.setHealth();
-						}
-						invalid = true;
-						System.out.println("You have been healed!");
-						player.numPotions--;
-					} else {
-						System.out.println("You do not have any potions!");
-						invalid = true;
-					}
-				} else if (userChoice.equalsIgnoreCase("Stats")) {
-					System.out.println(player.toString());
-					invalid = true;
-				} else {
-					System.out.println("That was not a valid argument. Please try again.");
-					System.out.println(userChoice);
-					invalid = true;
-				}
-			} while (invalid == true);
+			
+      runPlayerTurn();
+      
 			if (errorLevel == 1) {
 				return;
 			}
-			cpuDefence = 0;
-			boolean computerAttacks = randomizer.nextBoolean();
-			int computerPower = randomizer.nextInt((enemy.maxDamage - enemy.minDamage) + 1) + enemy.minDamage;
-			if (computerAttacks == true) {
-				System.out.println("The enemy has chosen to attack!");
-				System.out.println("Your defence is: " + playerDefence);
-				if (playerDefence > computerPower) {
-					enemy.attack(0, player);
-				} else {
-					enemy.attack(computerPower - playerDefence, player);
-				}
-			} else {
-				System.out.println("The enemy has chosen to defend!");
-				cpuDefence = computerPower;
-			}
+      
+			runEnemyTurn();
 			System.out.println("Turn Complete!");
-			/**
+			/*
 			 * waiting 5 seconds so the user isn't completely flooded with information
 			 * allows the user to look at what happened before loop continues
 			 */
@@ -133,6 +75,8 @@ public class TextRPG {
 				return;
 			}
 		}
+    
+    // Determine outcome of battle
 		if (enemy.isDead() && errorLevel == 0) {
 			System.out.println("Congrats, you have won!");
 			System.out.println("You earned 10 gold.");
@@ -143,9 +87,13 @@ public class TextRPG {
 				player.levelUp();
 			}
 		}
+    
+    // TODO (maybe?) might want to clean up how player death is handled, as I think it isn't as clear as it could be
+    
 		if (errorLevel == 0) {
 			this.shop();
 		}
+    
 		// allowing the user to quit
 		System.out.println("If you would like to quit, please type 'quit'. Otherwise, press enter to continue.");
 		String quit = "";
@@ -165,6 +113,93 @@ public class TextRPG {
 			player.health = (int) ((1.0 / 4.0) * player.maxHealth);
 		}
 	}
+  
+  /**
+   * In a combat scenario run the player's turn
+   *     If a fatal error occurred errorLevel will be set to 1 (this should be changed to raising an exception)
+   */
+  private void runPlayerTurn() {
+    boolean invalid = false;
+    do {
+      String userChoice = "";
+      System.out
+          .println("Would you like to heal, attack, or defend? You may see your stats by typing 'stats'");
+      if (scan.hasNext()) {
+        userChoice = scan.nextLine();
+      } else {
+        System.out.println("No input found. Ending Game.");
+        player.damage(9999);
+        errorLevel = 1; // TODO switch this from an errorLevel (which is a C-style thing) to raising an exception (which is Java-style)
+        return;
+      }
+      
+      invalid = runCommand(userChoice, enemy);
+    } while (invalid == true);
+  }
+  
+  /**
+   * Run the given command while fighting the given enemy
+   * @param userChoice The command entered by the user
+   * @param enemy The enemy the user is facing
+   * @return true if the entered command was invalid
+   */
+  private void runCommand(String userChoice, Monster enemy) {
+    int power = randomizer.nextInt((player.getMaxDamage() - player.minDamage) + 1) + player.minDamage;
+    if (userChoice.equalsIgnoreCase("Attack")) {
+      System.out.println("The enemy's defence is: " + enemy.getDefence());
+      if (enemy.getDefence() > power) {
+        player.attack(0, enemy);
+      } else {
+        player.attack(power - enemy.getDefence(), enemy);
+      }
+    } else if (userChoice.equalsIgnoreCase("Defend")) {
+      playerDefence = power;
+    } else if (userChoice.equalsIgnoreCase("Heal")) {
+      if (player.numPotions > 0) {
+        // Heals 20%
+        player.heal((int) ((1.0 / 5.0) * player.health));
+        if (player.health > player.maxHealth) {
+          player.setHealth();
+        }
+        System.out.println("You have been healed!");
+        player.numPotions--;
+        return true;
+      } else {
+        System.out.println("You do not have any potions!");
+        return true;
+      }
+    } else if (userChoice.equalsIgnoreCase("Stats")) {
+      System.out.println(player.toString());
+      return true;
+    } else {
+      System.out.println("That was not a valid argument. Please try again.");
+      System.out.println(userChoice);
+      return true;
+    }
+    
+    return false;
+  }
+  
+  /**
+   * In a combat scenario runs the given enemies turn 
+   */
+  private void runEnemyTurn(Monster enemy) {
+    enemy.setDefence(0);
+    boolean computerAttacks = randomizer.nextBoolean();
+    int computerPower = randomizer.nextInt((enemy.getMaxDamage() - enemy.minDamage) + 1) + enemy.minDamage;
+    if (computerAttacks == true) {
+      System.out.println("The enemy has chosen to attack!");
+      System.out.println("Your defence is: " + playerDefence); // TODO change playerDefence like monsterDefence was changed (add getters and setters)
+      if (playerDefence > computerPower) {
+        enemy.attack(0, player);
+      } else {
+        enemy.attack(computerPower - playerDefence, player);
+      }
+    } else {
+      System.out.println("The enemy has chosen to defend!");
+      enemy.setDefence(computerPower);
+    }
+  }
 
 	/**
 	 * Allows the user to buy health potions using the gold they earn from killing

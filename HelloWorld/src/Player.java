@@ -5,7 +5,7 @@ public class Player {
 	int level;
 	int monstersDefeated;
 	int minDamage;
-	int maxDamage;
+	private int maxDamage;
 	int numPotions;
 	int gold;
 
@@ -21,7 +21,7 @@ public class Player {
 		this.monstersDefeated = 0;
 		this.gold = 60;
 		this.numPotions = 1;
-		this.setHealth();
+		this.updateHealth();
 		this.setDamage();
 	}
 
@@ -31,7 +31,7 @@ public class Player {
 	 */
 	public void levelUp() {
 		level += 1;
-		this.setHealth();
+		this.updateHealth();
 		this.setDamage();
 	}
 
@@ -59,7 +59,7 @@ public class Player {
 	/**
 	 * This sets the min/max damage/power based upon the level
 	 */
-	public void setDamage() {
+	public void setDamage() { // TODO: rename, as set'X' should be reserved for setters. See Monster.setHealth(int health)
 		minDamage = 10 + level * 3;
 		maxDamage = 10 + level * 6;
 	}
@@ -68,7 +68,7 @@ public class Player {
 	 * This sets the max health according to the level and heals the player to full
 	 * health
 	 */
-	public void setHealth() {
+	public void updateHealth() { 
 		this.maxHealth = 90 + (10 * level);
 		this.health = maxHealth;
 	}
@@ -104,6 +104,10 @@ public class Player {
 		System.out.println("Player took " + damage + " damage!");
 		this.health -= damage;
 	}
+  
+  public int getMaxDamage()() {
+    return this.maxDamage;
+  }
 
 	public boolean isDead() {
 		boolean dead = health <= 0;
@@ -119,7 +123,7 @@ public class Player {
 		String str = "Player " + name + " Level " + level + "\n";
 		str += "Health: " + health + "/" + maxHealth + "\n";
 		str += "Number of Health Potions: " + this.numPotions + "\n";
-		str += "Power Range: " + minDamage + "-" + maxDamage;
+		str += "Power Range: " + minDamage + "-" + getMaxDamage();
 		return str;
 	}
 }

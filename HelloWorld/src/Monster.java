@@ -4,6 +4,7 @@ public class Monster {
 	int level;
 	int minDamage;
 	int maxDamage;
+  int defence;
 
 	/**
 	 * sets health and damage values based on given level
@@ -15,6 +16,7 @@ public class Monster {
 		this.level = level;
 		this.setHealth();
 		this.setDamage();
+    this.defence = 0;
 	}
 
 	public void damage(int damage) {
@@ -55,6 +57,17 @@ public class Monster {
 	public void attack(int damage, Player target) {
 		target.damage(damage);
 	}
+  
+  public int getDefence() {
+    return this.defence;
+  }
+  
+  public void setDefence(int d) {
+    // Check for valid conditions (this is a note for you, wouldn't normally need this comment)
+    if (d < 0) throw new IllegalArgumentException("Defence must be non-negative!");
+    
+    this.defence = d;
+  }
 
 	@Override
 	public String toString() {

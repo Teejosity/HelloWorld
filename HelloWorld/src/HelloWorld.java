@@ -8,7 +8,9 @@ public class HelloWorld {
  * @param args The path to the file to be used for input (If there is one)
  */
 	public static void main(String[] args) {
-		File file = new File(args[0]);
+    // TODO does this still work if you have no arguments? I don't think it will
+    // hint: use a conditional to check the length of args before trying to access it
+		File file = new File(args[0]); 
 		TextRPG rpg;
 		Scanner scan = new Scanner(System.in);
 		try {
