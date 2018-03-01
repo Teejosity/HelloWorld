@@ -1,13 +1,14 @@
 public class Player {
-	String name;
-	int health;
-	int maxHealth;
-	int level;
-	int monstersDefeated;
-	int minDamage;
+	private String name;
+	private int health;
+	private int maxHealth;
+	private int level;
+	private int monstersDefeated;
+	private int minDamage;
 	private int maxDamage;
-	int numPotions;
-	int gold;
+	private int numPotions;
+	private int gold;
+	private int defense;
 
 	/**
 	 * Sets health, damage, gold, and the number of potions to default values
@@ -22,7 +23,8 @@ public class Player {
 		this.gold = 60;
 		this.numPotions = 1;
 		this.updateHealth();
-		this.setDamage();
+		this.updateDamage();
+		this.defense = 0;
 	}
 
 	/**
@@ -32,7 +34,7 @@ public class Player {
 	public void levelUp() {
 		level += 1;
 		this.updateHealth();
-		this.setDamage();
+		this.updateDamage();
 	}
 
 	/**
@@ -55,13 +57,14 @@ public class Player {
 	public void heal(int health) {
 		this.health += health;
 	}
+	
 
 	/**
 	 * This sets the min/max damage/power based upon the level
 	 */
-	public void setDamage() { // TODO: rename, as set'X' should be reserved for setters. See Monster.setHealth(int health)
-		minDamage = 10 + level * 3;
-		maxDamage = 10 + level * 6;
+	public void updateDamage() {
+		minDamage = 10 + (level * 3);
+		maxDamage = 10 + (level * 6);
 	}
 
 	/**
@@ -72,8 +75,37 @@ public class Player {
 		this.maxHealth = 90 + (10 * level);
 		this.health = maxHealth;
 	}
+	
+	public int getDefense() {
+		return this.defense;
+	}
+	
+	public void setDefense(int d) {
+		if (d < 0) throw new IllegalArgumentException("Defence must be non-negative!");
+		
+		this.defense = d;
+	}
+	
+	public void setNumPotions(int p) {
+		if(p < 0) throw new IllegalArgumentException("Potion amount must be non-negative!");
+		
+		this.numPotions = p;
+	}
+	
+	public int getGold() {
+		return this.gold;
+	}
+	
+	public void setGold(int g) {
+		if (g < 0) throw new IllegalArgumentException("Gold amount must be non-negative!");
+		
+		this.gold = g;
+	}
+	
+	public int getMaxHealth() {
+		return this.maxHealth;
+	}
 
-	// this attacks @param target for @param damage
 	/**
 	 * Attacks the target for damage amount
 	 * 
@@ -105,8 +137,16 @@ public class Player {
 		this.health -= damage;
 	}
   
-  public int getMaxDamage()() {
+  public int getMaxDamage() {
     return this.maxDamage;
+  }
+  
+  public int getMinDamage() {
+	  return this.minDamage;
+  }
+  
+  public int getNumPotions() {
+	  return this.numPotions;
   }
 
 	public boolean isDead() {
@@ -117,13 +157,30 @@ public class Player {
 	public int getLevel() {
 		return level;
 	}
+	
+	public String getName() {
+		return this.name;
+	}
+	
+	public int getHealth() {
+		return this.health;
+	}
+	
+	public void forceKill() {
+		this.health = 0;
+	}
 
 	@Override
 	public String toString() {
-		String str = "Player " + name + " Level " + level + "\n";
-		str += "Health: " + health + "/" + maxHealth + "\n";
-		str += "Number of Health Potions: " + this.numPotions + "\n";
+		String str = "Player " + this.getName() + " Level " + this.getLevel() + "\n";
+		str += "Health: " + this.getHealth() + "/" + maxHealth + "\n";
+		str += "Number of Health Potions: " + this.getNumPotions() + "\n";
 		str += "Power Range: " + minDamage + "-" + getMaxDamage();
 		return str;
 	}
+
+	public int getMonstersDefeated() {
+		return this.monstersDefeated;
+	}
+	
 }

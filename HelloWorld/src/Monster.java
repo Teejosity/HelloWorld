@@ -1,10 +1,10 @@
 public class Monster {
-	int health;
-	int maxHealth;
-	int level;
-	int minDamage;
-	int maxDamage;
-  int defence;
+	private int health;
+	private int maxHealth;
+	private int level;
+	private int minDamage;
+	private int maxDamage;
+	private int defense;
 
 	/**
 	 * sets health and damage values based on given level
@@ -14,9 +14,9 @@ public class Monster {
 	 */
 	public Monster(int level) {
 		this.level = level;
-		this.setHealth();
-		this.setDamage();
-    this.defence = 0;
+		this.updateHealth();
+		this.updateDamage();
+		this.defense = 0;
 	}
 
 	public void damage(int damage) {
@@ -28,7 +28,7 @@ public class Monster {
 	 * (this is a JavaDoc comment) 
 	 * this sets the max health and heals the monster to full health
 	 */
-	public void setHealth() {
+	public void updateHealth() {
 		maxHealth = health = 90 + (10 * level);
 		health = maxHealth;
 	}
@@ -41,7 +41,7 @@ public class Monster {
 	/**
 	 * sets the min/max damage values based on the level
 	 */
-	public void setDamage() {
+	public void updateDamage() {
 		minDamage = 10 + level * 3;
 		maxDamage = 10 + level * 6;
 	}
@@ -58,15 +58,15 @@ public class Monster {
 		target.damage(damage);
 	}
   
-  public int getDefence() {
-    return this.defence;
-  }
+	public int getDefense() {
+		return this.defense;
+	}
   
-  public void setDefence(int d) {
+	public void setDefense(int d) {
     // Check for valid conditions (this is a note for you, wouldn't normally need this comment)
     if (d < 0) throw new IllegalArgumentException("Defence must be non-negative!");
     
-    this.defence = d;
+    this.defense = d;
   }
 
 	@Override
@@ -74,5 +74,13 @@ public class Monster {
 		String str = "Monster Level " + level + "\n";
 		str += "Health: " + health + "/" + maxHealth;
 		return str;
+	}
+
+	public int getMaxDamage() {
+		return maxDamage;
+	}
+
+	public int getMinDamage() {
+		return this.minDamage;
 	}
 }

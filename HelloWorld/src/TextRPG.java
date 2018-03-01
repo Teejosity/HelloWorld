@@ -4,10 +4,10 @@ import java.util.Random;
 import java.lang.Thread;
 
 public class TextRPG {
-	Scanner scan;
-	Player player;
-	int errorLevel;
-	Random randomizer = new Random();
+	private Scanner scan;
+	private Player player;
+	private Monster enemy;
+	private Random randomizer = new Random();
 
 	/**
 	 * Constructs a new TextRPG utilizing scan for input
@@ -24,7 +24,6 @@ public class TextRPG {
 		} else {
 
 		}
-		errorLevel = 0;
 		player = new Player(name);
 	}
 
@@ -32,33 +31,24 @@ public class TextRPG {
 		System.out.println("Welcome to my RPG!");
 		System.out.println(
 				"You will be faced with monsters, and you will only have the opportunity to buy items inbetween fights.");
-		while (!player.isDead() && errorLevel == 0) {
+		while (!player.isDead()) {
 			this.battle();
-		}
-		if (errorLevel == 1) {
-			return;
 		}
 		System.out.println("Unfortunately, you have failed.");
 		System.out.println("Game over.");
-		System.out.println("Score: " + ((player.level * 100) + (player.monstersDefeated * 5)));
+		System.out.println("Score: " + ((player.getLevel() * 100) + (player.getMonstersDefeated() * 5)));
 	}
 
 	@SuppressWarnings("static-access")
 	public void battle() {
-		Monster enemy = new Monster(player.getLevel());
-		int playerDefence = 0;
+		enemy = new Monster(player.getLevel());
 		System.out.println("The battle has begun!");
     
     // Main combat loop
-		while (!enemy.isDead() && !player.isDead() && errorLevel == 0) {
+		while (!enemy.isDead() && !player.isDead()) {
 			System.out.println("Your opponent is: " + enemy.toString());
 			
-      runPlayerTurn();
-      
-			if (errorLevel == 1) {
-				return;
-			}
-      
+			runPlayerTurn();
 			runEnemyTurn();
 			System.out.println("Turn Complete!");
 			/*
@@ -70,14 +60,10 @@ public class TextRPG {
 			} catch (InterruptedException e) {
 
 			}
-			playerDefence = 0;
-			if (errorLevel == 1) {
-				return;
-			}
 		}
     
     // Determine outcome of battle
-		if (enemy.isDead() && errorLevel == 0) {
+		if (enemy.isDead()) {
 			System.out.println("Congrats, you have won!");
 			System.out.println("You earned 10 gold.");
 			player.getRewards();
@@ -88,11 +74,9 @@ public class TextRPG {
 			}
 		}
     
-    // TODO (maybe?) might want to clean up how player death is handled, as I think it isn't as clear as it could be
     
-		if (errorLevel == 0) {
-			this.shop();
-		}
+		
+		this.shop();
     
 		// allowing the user to quit
 		System.out.println("If you would like to quit, please type 'quit'. Otherwise, press enter to continue.");
@@ -100,17 +84,16 @@ public class TextRPG {
 		if (scan.hasNextLine()) {
 			quit = scan.nextLine();
 		} else {
-			System.out.println("No input found. Ending Game.");
-			quit = "quit";
+			throw new NoInputFoundException();
 		}
 		if (quit.equalsIgnoreCase("quit")) {
-			player.damage(9999);
+			player.forceKill();
 			return;
 		}
 
-		if (player.health < (int) (player.maxHealth / 4.0)) {
+		if (player.getHealth() < (int) (player.getMaxHealth() / 4.0)) {
 			// Healing to 25% of max health
-			player.health = (int) ((1.0 / 4.0) * player.maxHealth);
+			player.heal((int) ((1.0 / 4.0) * player.getMaxHealth()));
 		}
 	}
   
@@ -118,95 +101,94 @@ public class TextRPG {
    * In a combat scenario run the player's turn
    *     If a fatal error occurred errorLevel will be set to 1 (this should be changed to raising an exception)
    */
-  private void runPlayerTurn() {
-    boolean invalid = false;
-    do {
-      String userChoice = "";
-      System.out
-          .println("Would you like to heal, attack, or defend? You may see your stats by typing 'stats'");
-      if (scan.hasNext()) {
-        userChoice = scan.nextLine();
-      } else {
-        System.out.println("No input found. Ending Game.");
-        player.damage(9999);
-        errorLevel = 1; // TODO switch this from an errorLevel (which is a C-style thing) to raising an exception (which is Java-style)
-        return;
-      }
+	private void runPlayerTurn() {
+		boolean invalid = false;
+		do {
+			String userChoice = "";
+			System.out.println("Would you like to heal, attack, or defend? You may see your stats by typing 'stats'");
+			if (scan.hasNext()) {
+				userChoice = scan.nextLine();
+			} else {
+				System.out.println("No input found. Ending Game.");
+				player.forceKill();
+				throw new NoInputFoundException();
+			}
       
-      invalid = runCommand(userChoice, enemy);
-    } while (invalid == true);
-  }
+			invalid = runCommand(userChoice, enemy);
+		} while (invalid == true);
+	}
   
-  /**
-   * Run the given command while fighting the given enemy
-   * @param userChoice The command entered by the user
-   * @param enemy The enemy the user is facing
-   * @return true if the entered command was invalid
-   */
-  private void runCommand(String userChoice, Monster enemy) {
-    int power = randomizer.nextInt((player.getMaxDamage() - player.minDamage) + 1) + player.minDamage;
-    if (userChoice.equalsIgnoreCase("Attack")) {
-      System.out.println("The enemy's defence is: " + enemy.getDefence());
-      if (enemy.getDefence() > power) {
-        player.attack(0, enemy);
-      } else {
-        player.attack(power - enemy.getDefence(), enemy);
-      }
-    } else if (userChoice.equalsIgnoreCase("Defend")) {
-      playerDefence = power;
-    } else if (userChoice.equalsIgnoreCase("Heal")) {
-      if (player.numPotions > 0) {
-        // Heals 20%
-        player.heal((int) ((1.0 / 5.0) * player.health));
-        if (player.health > player.maxHealth) {
-          player.setHealth();
-        }
-        System.out.println("You have been healed!");
-        player.numPotions--;
-        return true;
-      } else {
-        System.out.println("You do not have any potions!");
-        return true;
-      }
-    } else if (userChoice.equalsIgnoreCase("Stats")) {
-      System.out.println(player.toString());
-      return true;
-    } else {
-      System.out.println("That was not a valid argument. Please try again.");
-      System.out.println(userChoice);
-      return true;
-    }
+	/**
+	 * Run the given command while fighting the given enemy
+	 * @param userChoice The command entered by the user
+	 * @param enemy The enemy the user is facing
+	 * @return true if the entered command was invalid
+	 */
+	private boolean runCommand(String userChoice, Monster enemy) {
+		player.setDefense(0);
+		int power = randomizer.nextInt((player.getMaxDamage() - player.getMinDamage()) + 1) + player.getMinDamage();
+		if (userChoice.equalsIgnoreCase("Attack")) {
+			System.out.println("The enemy's defence is: " + enemy.getDefense());
+			if (enemy.getDefense() > power) {
+				player.attack(0, enemy);
+			} else {
+				player.attack(power - enemy.getDefense(), enemy);
+			}
+		} else if (userChoice.equalsIgnoreCase("Defend")) {
+			player.setDefense(power);
+		} else if (userChoice.equalsIgnoreCase("Heal")) {
+			if (player.getNumPotions() > 0) {
+				// Heals 20%
+				player.heal((int) ((1.0 / 5.0) * player.getHealth()));
+				if (player.getHealth() > player.getMaxHealth()) {
+					player.updateHealth();
+				}
+				System.out.println("You have been healed!");
+				player.setNumPotions(player.getNumPotions()-1);
+				return true;
+			} else {
+				System.out.println("You do not have any potions!");
+				return true;
+			}
+		} else if (userChoice.equalsIgnoreCase("Stats")) {
+			System.out.println(player.toString());
+			return true;
+		} else {
+			System.out.println("That was not a valid argument. Please try again.");
+			//System.out.println(userChoice);
+			return true;
+		}
     
-    return false;
-  }
+		return false;
+	}
   
-  /**
-   * In a combat scenario runs the given enemies turn 
-   */
-  private void runEnemyTurn(Monster enemy) {
-    enemy.setDefence(0);
-    boolean computerAttacks = randomizer.nextBoolean();
-    int computerPower = randomizer.nextInt((enemy.getMaxDamage() - enemy.minDamage) + 1) + enemy.minDamage;
-    if (computerAttacks == true) {
-      System.out.println("The enemy has chosen to attack!");
-      System.out.println("Your defence is: " + playerDefence); // TODO change playerDefence like monsterDefence was changed (add getters and setters)
-      if (playerDefence > computerPower) {
-        enemy.attack(0, player);
-      } else {
-        enemy.attack(computerPower - playerDefence, player);
-      }
-    } else {
-      System.out.println("The enemy has chosen to defend!");
-      enemy.setDefence(computerPower);
-    }
-  }
+	/**
+	 * In a combat scenario runs the given enemies turn 
+	 */
+	private void runEnemyTurn() {
+		enemy.setDefense(0);
+		boolean computerAttacks = randomizer.nextBoolean();
+		int computerPower = randomizer.nextInt((enemy.getMaxDamage() - enemy.getMinDamage()) + 1) + enemy.getMinDamage();
+		if (computerAttacks == true) {
+			System.out.println("The enemy has chosen to attack!");
+			System.out.println("Your defence is: " + player.getDefense());
+			if (player.getDefense() > computerPower) {
+				enemy.attack(0, player);
+			} else {
+				enemy.attack(computerPower - player.getDefense(), player);
+			}
+		} else {
+			System.out.println("The enemy has chosen to defend!");
+			enemy.setDefense(computerPower);
+		}
+	}
 
 	/**
 	 * Allows the user to buy health potions using the gold they earn from killing
 	 * monsters
 	 */
 	public void shop() {
-		System.out.println("You now have " + player.gold + " gold.");
+		System.out.println("You now have " + player.getGold() + " gold.");
 		System.out.println("Health Potions restore 20% of your health.");
 		System.out.println("They cost 20 gold.");
 		boolean isValid = true;
@@ -226,7 +208,7 @@ public class TextRPG {
 					}
 				} else {
 					System.out.println("No input found. Ending Game.");
-					player.damage(9999);
+					player.forceKill();
 					return;
 				}
 			} catch (InputMismatchException e) {
@@ -235,13 +217,13 @@ public class TextRPG {
 			}
 			if (isValid = true) {
 				purchasePrice = 20 * numPotionsBought;
-				if (player.gold < purchasePrice) {
+				if (player.getGold() < purchasePrice) {
 					System.out.println("You do not have enough gold for that purchase.");
 				}
 			}
-		} while (isValid == false || player.gold < purchasePrice);
-		player.numPotions += numPotionsBought;
-		player.gold -= purchasePrice;
-		System.out.println("You now have " + player.gold + " gold.");
+		} while (isValid == false || player.getGold() < purchasePrice);
+		player.setNumPotions(player.getNumPotions() + numPotionsBought);
+		player.setGold(player.getGold() - purchasePrice);
+		System.out.println("You now have " + player.getGold() + " gold.");
 	}
 }
