@@ -1,4 +1,7 @@
+package hello;
+
 public class Player {
+	private final long id;
 	private String name;
 	private int health;
 	private int maxHealth;
@@ -16,7 +19,8 @@ public class Player {
 	 * @param name
 	 *            The name of the player
 	 */
-	public Player(String name) {
+	public Player(long id, String name) {
+		this.id = id;
 		this.name = name;
 		this.level = 1;
 		this.monstersDefeated = 0;
@@ -25,6 +29,22 @@ public class Player {
 		this.updateHealth();
 		this.updateDamage();
 		this.defense = 0;
+	}
+	
+	public Player(String name) {
+		this.id = 0;
+		this.name = name;
+		this.level = 1;
+		this.monstersDefeated = 0;
+		this.gold = 60;
+		this.numPotions = 1;
+		this.updateHealth();
+		this.updateDamage();
+		this.defense = 0;
+	}
+	
+	public long getId() {
+		return this.id;
 	}
 
 	/**

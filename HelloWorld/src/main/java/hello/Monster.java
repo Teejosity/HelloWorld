@@ -1,3 +1,5 @@
+package hello;
+
 public class Monster {
 	private int health;
 	private int maxHealth;
